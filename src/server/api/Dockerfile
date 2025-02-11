@@ -1,9 +1,9 @@
-FROM --platform=linux/amd64 python:3.11-slim-buster AS build
+FROM neo-dev-cn-beijing.cr.volces.com/common/python:3.11-slim-buster
 
 WORKDIR /app
 
 COPY ./requirements.txt /app/requirements.txt
-RUN python3.11 -m pip install -r requirements.txt --no-cache-dir
+RUN python3.11 -m pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com --no-cache-dir
 
 COPY ./memobase_server /app/memobase_server
 COPY ./api.py /app
