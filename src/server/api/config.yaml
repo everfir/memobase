@@ -1,2 +1,4 @@
+persistent_chat_blobs: true
+language: zh
 llm_base_url: http://101.47.130.213:3000/v1/
 best_llm_model: gpt-4o-mini
