@@ -1,4 +1,5 @@
 import memobase_server.env
+import dataclasses
 
 # Done setting up env
 
@@ -22,7 +23,7 @@ from memobase_server.models.blob import BlobType
 from memobase_server.models.utils import Promise
 from memobase_server.models import response as res
 from memobase_server import controllers
-from memobase_server.env import LOG, TelemetryKeyName
+from memobase_server.env import LOG, TelemetryKeyName, Config
 from memobase_server.telemetry.capture_key import capture_int_key
 from uvicorn.config import LOGGING_CONFIG
 from memobase_server.auth.token import (
@@ -276,6 +277,33 @@ async def get_user_events(
     project_id = request.state.memobase_project_id
     p = await controllers.event.get_user_events(user_id, project_id, topk=topk)
     return p.to_response(res.UserEventsDataResponse)
+
+
+@router.get("/project/config", tags=["project"])
+async def get_project_config(request: Request) -> res.BaseResponse:
+    """Get the current project configuration"""
+    config_dict = {
+        field.name: getattr(memobase_server.env.CONFIG, field.name)
+        for field in dataclasses.fields(Config)
+    }
+    return res.BaseResponse(data={"config": config_dict})
+
+
+@router.post("/project/config", tags=["project"])
+async def update_project_config(
+    request: Request,
+    config_data: dict = Body(..., description="The config to update"),
+) -> res.BaseResponse:
+    """Update the project configuration"""
+    # Validate config fields
+    fields = {field.name for field in dataclasses.fields(Config)}
+    filtered_config = {k: v for k, v in config_data["config"].items() if k in fields}
+    
+    # Update CONFIG object
+    new_config = dataclasses.replace(memobase_server.env.CONFIG, **filtered_config)
+    memobase_server.env.CONFIG = new_config
+    
+    return res.BaseResponse()
 
 
 class AuthMiddleware(BaseHTTPMiddleware):

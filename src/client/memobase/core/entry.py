@@ -46,15 +46,25 @@ class MemoBaseClient:
             return False
         return True
 
-    def get_config(self) -> str:
+    def get_profile_config(self) -> str:
         r = unpack_response(self._client.get("/project/profile_config"))
         return r.data["profile_config"]
 
-    def update_config(self, config: str) -> bool:
+    def update_profile_config(self, config: str) -> bool:
         r = unpack_response(
             self._client.post(
                 "/project/profile_config", json={"profile_config": config}
             )
+        )
+        return True
+
+    def get_config(self) -> dict:
+        r = unpack_response(self._client.get("/project/config"))
+        return r.data["config"]
+
+    def update_config(self, config: dict) -> bool:
+        r = unpack_response(
+            self._client.post("/project/config", json={"config": config})
         )
         return True
 
